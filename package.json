@@ -1,0 +1,19 @@
+{
+  "name": "figma-bulk-app",
+  "version": "1.0.0",
+  "description": "Boost up development with simple clicks",
+  "main": "code.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "watch": "npm run build -- --watch"
+  },
+  "author": "lozilad",
+  "license": "MIT",
+  "devDependencies": {
+    "@figma/plugin-typings": "*",
+    "typescript": "*"
+  },
+  "dependencies": {
+    "figma-plugin-ds": "^1.0.1"
+  }
+}

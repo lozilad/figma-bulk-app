@@ -1,0 +1,60 @@
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/thomas-lowry/figma-plugin-ds/dist/figma-plugin-ds.css">
+<style>
+  body {
+    padding: 1em;
+    overflow: auto;
+  }
+  div {
+    margin: 1em;
+  }
+  input {
+    display: block;
+  }
+  #logs {
+    padding: 8px 4px; height: 200px; overflow: scroll; border: 1px dashed gray; border-radius: 8px
+  }
+</style>
+
+<main>
+  <div class="section-title">
+    <h1>Figma Selection</h1>
+  </div>
+
+  <div class="section-title">
+    Suffix:
+    <div class="input">
+      <input id="suffix" class="" placeholder="Suffix" value="-custom">
+    </div>
+  </div>
+
+  <div class="section-title">
+    <button id="rename" class="button button--primary-destructive">RENAME!</button>
+    <button id="redo" class="button button--secondary" style="margin-left: 4px">REDO!</button>
+  </div>
+
+  <div id="logs">
+    Selection on Figma will log here
+  </div>
+</main>
+
+<script>
+  console.log('GUI started');
+  onmessage = (message) => {
+    console.log('[Parent message]', message);
+    const data = message.data.pluginMessage;
+    document.getElementById('logs').innerText = data.logs.length
+      ? data.logs.join('\n')
+      : 'Selection on Figma will log here';
+  }
+
+  document.getElementById('rename').onclick = () => {
+    const suffix = document.getElementById('suffix').value;
+     parent.postMessage({ pluginMessage: { type: 'rename', suffix } }, '*');
+  };
+
+  document.getElementById('redo').onclick = () => {
+    const suffix = document.getElementById('suffix').value;
+    parent.postMessage({ pluginMessage: { type: 'redo', suffix } }, '*');
+  };
+
+</script>
