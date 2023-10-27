@@ -47,6 +47,7 @@ function bulkRename(suffix = SUFFIX) {
       
 
       const final_name = child.name + suffix;
+      const final_text = child.characters + suffix;
       child.name = final_name;
       if (child.type === 'TEXT') {
         await Promise.all(
@@ -55,7 +56,7 @@ function bulkRename(suffix = SUFFIX) {
         );
 
         child.autoRename = true;
-        child.characters = final_name;
+        child.characters = final_text;
       }
     });
   });
