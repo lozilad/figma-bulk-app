@@ -13,7 +13,5 @@
     "@figma/plugin-typings": "*",
     "typescript": "*"
   },
-  "dependencies": {
-    "figma-plugin-ds": "^1.0.1"
-  }
+  "dependencies": {}
 }

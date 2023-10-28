@@ -1,60 +1,498 @@
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/thomas-lowry/figma-plugin-ds/dist/figma-plugin-ds.css">
-<style>
-  body {
-    padding: 1em;
-    overflow: auto;
-  }
-  div {
-    margin: 1em;
-  }
-  input {
-    display: block;
-  }
-  #logs {
-    padding: 8px 4px; height: 200px; overflow: scroll; border: 1px dashed gray; border-radius: 8px
-  }
-</style>
+<html>
+    <head>
+      <meta charset="UTF-8">
+      <style>
+        .theme-raspberry {
+          --color-plate-A: #cd3d6f;
+          --color-plate-B: #dd5e89;
+          --color-plate-C: #e07fa0;
+          --color-plate-D: #ed9cb8;
+          --color-plate-E: 	#f3bace;
+        }
+        .theme-walnut {
+          --color-plate-A: #c89f76;
+          --color-plate-B: #deb993;
+          --color-plate-C: #f4d6b7;
+          --color-plate-D: #ffead3;
+          --color-plate-E: #fff1e2;
+        }
+        .theme-ocean {
+          --color-plate-A: #305772;
+          --color-plate-B: #155eaa;
+          --color-plate-C: #1e9dae;
+          --color-plate-D: #3ebac7;
+          --color-plate-E: #bbe0e9;
+        }
+        .theme-sci {
+          --color-plate-A: #002439;
+          --color-plate-B: #005066;
+          --color-plate-C: #4e7988;
+          --color-plate-D: #78cce2;
+          --color-plate-E: #e4eff0;
+        }
+        .theme-black-gold {
+          --color-plate-A: #4C3D3D;
+          --color-plate-B: #C07F00;
+          --color-plate-C: #FFD95A;
+          --color-plate-D: #FFF7D4;
+          --color-plate-E: #fdfdf7;
+        }
+        body {
+          padding: 1rem;
+          overflow: auto;
+          background: var(--color-plate-A);
+          font-family: 'Inter', sans-serif;
+          color: var(--color-plate-D);
+        }
+        button, a {cursor: pointer}
+        input, select {
+          display: block;
+          background: var(--color-plate-B);
+          color: var(--color-plate-D);
+          outline: none;
+          border: none;
+          border-bottom: 2px solid var(--color-plate-C);
+          padding: 8px 12px;
+        }
+        .disable {
+          opacity: 0.5;
+          cursor: not-allowed;
+          pointer-events: none;
+        }
+        .display-none {
+          display: none;
+        }
+        input:focus {
+          background: var(--color-plate-C);
+          border-color: var(--color-plate-D);
+        }
+        input[type="checkbox"], input[type="radio"] {
+          width: 14px;
+          height: 14px;
+        }
+        #logs {
+          padding: 8px 4px; height: 275px; overflow: scroll; border: 1px dashed gray; border-radius: 8px
+        }
 
-<main>
-  <div class="section-title">
-    <h1>Figma Selection</h1>
-  </div>
+        main {
+          display: flex;
+          gap: 32px;
+        }
+        main > #rules {
+          flex: 0 1 400px;
+        }
 
-  <div class="section-title">
-    Suffix:
-    <div class="input">
-      <input id="suffix" class="" placeholder="Suffix" value="-custom">
-    </div>
-  </div>
+        main > #selection {
+          flex: 1 1 475px;
+        }
 
-  <div class="section-title">
-    <button id="rename" class="button button--primary-destructive">RENAME!</button>
-    <button id="redo" class="button button--secondary" style="margin-left: 4px">REDO!</button>
-  </div>
+        main > #guides {
+          flex: 0 1 300px;
+        }
 
-  <div id="logs">
-    Selection on Figma will log here
-  </div>
-</main>
+        button {
+          background: var(--color-plate-B);
+          border-radius: 15px;
+          padding: 8px 12px;
+          outline: none;
+          border: 1px solid var(--color-plate-D);
+          color: inherit;
+          min-width: 125px;
+        }
+        button:active {
+          transform: scale(0.95);
+        }
+        .button--secondary {
+          background: var(--color-plate-A);
+          border-color: var(--color-plate-B);
+          color: inherit;
+        }
 
-<script>
-  console.log('GUI started');
-  onmessage = (message) => {
-    console.log('[Parent message]', message);
-    const data = message.data.pluginMessage;
-    document.getElementById('logs').innerText = data.logs.length
-      ? data.logs.join('\n')
-      : 'Selection on Figma will log here';
-  }
+        .text-color-a {color: var(--color-plate-A)}
+        .text-color-b {color: var(--color-plate-B)}
+        .text-color-c {color: var(--color-plate-C)}
+        .text-color-d {color: var(--color-plate-D)}
+        .text-color-e {color: var(--color-plate-E)}
+        .bg-color-a {color: var(--color-plate-A)}
+        .bg-color-b {color: var(--color-plate-B)}
+        .bg-color-c {color: var(--color-plate-C)}
+        .bg-color-d {color: var(--color-plate-D)}
+        .bg-color-e {color: var(--color-plate-E)}
+        .flex {display: flex}
+        .flex-gap {gap: 8px}
+        .flex-gap-2 {gap: 12px}
+        .flex-gap-3 {gap: 24px}
+        .flex-v-center {align-items: center}
+        .margin-top {margin-top: 8px}
+        .margin-top-2 {margin-top: 12px}
+        .margin-top-3 {margin-top: 24px}
 
-  document.getElementById('rename').onclick = () => {
-    const suffix = document.getElementById('suffix').value;
-     parent.postMessage({ pluginMessage: { type: 'rename', suffix } }, '*');
-  };
+      </style>
+    </head>
+    <body>
 
-  document.getElementById('redo').onclick = () => {
-    const suffix = document.getElementById('suffix').value;
-    parent.postMessage({ pluginMessage: { type: 'redo', suffix } }, '*');
-  };
+      <main>
+        <section id="rules">
+          <h2>Naming Rules:</h2>
+          <table>
+            <tr>
+              <td>
+                <div class="flex flex-gap flex-v-center margin-top">
+                  <div class="input">
+                    <input id="prefixcheck" checked type="checkbox">
+                  </div >
+                  <label for="prefixcheck">Prefix:</label>
+                </div>
+              </td>
+              <td>
+                <input id="prefix" placeholder="Prefix" value="app-">
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <div class="flex flex-gap flex-v-center margin-top">
+                  <div class="input">
+                    <input id="suffixcheck" type="checkbox">
+                  </div >
+                  <label for="suffixcheck">Suffix:</label>
+                </div>
+              </td>
+              <td>
+                <input id="suffix" class="" placeholder="Suffix" value="-custom">
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <div class="flex flex-gap flex-v-center margin-top">
+                  <div class="input">
+                    <input id="basenamecheck" type="checkbox">
+                  </div >
+                  <label for="basenamecheck">Base Name:</label>
+                </div>
+              </td>
+              <td>
+                <input id="basename" class="" placeholder="" value="">
+              </td>
+            </tr>
+            <tr>
+              <td colspan="2">
+                <div class="flex flex-gap flex-v-center margin-top">
+                  <div class="input">
+                    <input id="trimspacecheck" type="checkbox">
+                  </div >
+                  <label for="trimspacecheck">Trim white spaces</label>
+                </div>
+              </td>
+            </tr>
 
-</script>
+            <tr>
+              <td colspan="2">
+                <div class="flex flex-gap flex-v-center margin-top">
+                  <div class="input">
+                    <input id="textcontentcheck" type="checkbox">
+                  </div >
+                  <label for="textcontentcheck">Change text content.</label>
+                </div>
+                <small>(Experimental rule: Use with caution. Changing text content may not work when Figma has been opened for a long time (usually more than 30mins). To make this work you might need to Restart Figma.)</small>
+              </td>
+            </tr>
+
+            <tr class="display-none">
+              <td colspan="2">
+                <div class="flex flex-gap flex-v-center margin-top">
+                  <div class="input">
+                    <input id="increment" class="" placeholder="Base Name" type="checkbox">
+                  </div >
+                  <label for="increment">Increment rules:</label>
+                </div>
+              </td>
+            </tr>
+            <tr class="display-none">
+              <td colspan="2">
+                <div id="incrementcontrol">
+                <div class="flex flex-gap flex-v-center margin-top">
+                  <label for="startwith">Start with:</label>
+                  <div class="input">
+                    <input id="startwith" class="" placeholder="Number" value="1" type="number">
+                  </div>
+                </div>
+                  <div class="flex flex-gap flex-v-center margin-top">
+                    <label for="stepfor">Step for:</label>
+                    <div class="input">
+                      <input id="stepfor" class="" placeholder="Number" value="1" type="number">
+                    </div>
+                  </div>
+                <div class="margin-top">
+                  <label>Increment format:</label>
+                  <div class="flex flex-gap flex-v-center margin-top" style="padding-left: 12px">
+                    <div class="input">
+                      <input id="incrementformat_1" class="" name="incrementformat" value="underscore" checked type="radio">
+                    </div>
+                    <label for="incrementformat_1">Underscore: _1</label>
+                  </div>
+<!--                  <div class="flex flex-gap flex-v-center margin-top" style="padding-left: 12px">-->
+<!--                    <div class="input">-->
+<!--                      <input id="incrementformat_2" class="" name="incrementformat" value="parentheses" type="radio">-->
+<!--                    </div>-->
+<!--                    <label for="incrementformat_2">Parentheses: (1)</label>-->
+<!--                  </div>-->
+                </div>
+                </div>
+              </td>
+            </tr>
+          </table>
+
+
+          <div class="flex flex-v-center flex-gap-2 margin-top-3">
+            <div class="flex flex-v-center flex-gap">
+              <label>Theme:</label>
+              <select id="theme">
+                <option value="theme-sci">SCI</option>
+                <option value="theme-walnut">Walnut</option>
+                <option value="theme-ocean">Ocean</option>
+                <option value="theme-raspberry">Raspberry</option>
+                <option value="theme-black-gold" selected>Black Gold</option>
+              </select>
+            </div>
+
+            <div class="flex flex-gap flex-v-center">
+              <label for="show-guides">Show Guides:</label>
+              <input id="show-guides" type="checkbox">
+            </div>
+          </div>
+
+        </section>
+
+
+        <section id="selection">
+          <div class="section-title">
+            <h2>Layer Selection:</h2>
+            <small>Hint: Select a layer from design.</small>
+          </div>
+          <div id="logs" class="margin-top-2">
+            Selection on Figma will log here
+          </div>
+          <div class="flex flex-gap margin-top">
+            <button id="rename" style="width: 100%">RENAME!</button>
+          </div>
+        </section>
+
+        <section id="guides" class="text-color-c">
+          <h2>Guides:</h2>
+          <small>
+            Steps:
+            <ol>
+              <li>Open plugin "Figma Rename Tool".</li>
+              <li>Select a Frame, or a Group, or an Element (Text, Image).</li>
+              <li>Selection area should show Layers that would be updated.</li>
+              <li>Check & Enter value for rules you want to apply</li>
+              <li>Preview layers in Selection, uncheck a layer in case you don't want to apply rules.</li>
+              <li>Press "Rename"</li>
+            </ol>
+
+            How "Rename" works with Rules:
+            <ol>
+              <li>Prefix: prepend value from the start.</li>
+              <li>Suffix: append value at the end.</li>
+              <li>Base name: replace the current name with Base name.</li>
+              <li>Trim: remove all white spaces in the final name.</li>
+              <li>Change text content: the real content inside will be changes like layer name.</li>
+            </ol>
+
+            In case of discarding changes:
+            <ul>
+              <li>Use Figma Redo (Figma/Edit/Redo).</li>
+            </ul>
+
+            No Support for:
+            <ul>
+              <li>Select multiple layers: Group them first instead then you can select.</li>
+            </ul>
+          </small>
+        </section>
+      </main>
+
+      <script>
+        let SECTION_DISPLAY = {
+          RULES: [true, 400],
+          SELECTION: [true, 475],
+          GUIDES: [true, 300]
+        };
+        console.log('deg', SECTION_DISPLAY);
+
+        function _expandWindow() {
+          let x = 0;
+          Object.values(SECTION_DISPLAY)
+                  .filter(section => section[0] === true)
+                  .forEach(section => x += section[1]);
+          parent.postMessage({ pluginMessage: { type: 'expand', width: x} }, '*');
+          console.log(SECTION_DISPLAY);
+        }
+        function displaySelection(display = true) {
+          SECTION_DISPLAY.SELECTION[0] = display;
+          _expandWindow();
+        }
+        function displayGuides(display = true) {
+          console.log('debug display', SECTION_DISPLAY)
+          SECTION_DISPLAY.GUIDES[0] = display;
+          _expandWindow();
+        }
+
+        /* Guides */
+        const showGuide = document.getElementById('show-guides');
+        const guides = document.getElementById('guides');
+        function checkShowGuide() {
+          if (showGuide.checked) {
+            displayGuides();
+            guides.style.display = 'block';
+          } else {
+            displayGuides(false);
+            guides.style.display = 'none';
+          }
+        }
+        checkShowGuide();
+        showGuide.onchange = checkShowGuide;
+      </script>
+
+      <script>
+        /* Increment control */
+        const incrementcontrol = document.getElementById('incrementcontrol');
+        const increment = document.getElementById('increment');
+        function checkShowIncrementControl() {
+          if (increment.checked) {
+            incrementcontrol.style.opacity = '1';
+            incrementcontrol.style.pointerEvents = 'auto';
+            incrementcontrol.style.cursor = 'auto';
+          } else {
+            incrementcontrol.style.opacity = '0.3';
+            incrementcontrol.style.pointerEvents = 'none';
+            incrementcontrol.style.cursor = 'not-allowed';
+          }
+        }
+        checkShowIncrementControl();
+        increment.onchange = checkShowIncrementControl;
+      </script>
+
+      <script>
+        /* Themes */
+        const themeSelect = document.getElementById('theme');
+        document.body.classList.add(themeSelect.value);
+        themeSelect.onchange = (change) => {
+          document.body.classList.replace(document.body.classList, change.target.value);
+        }
+      </script>
+
+      <script>
+        /* Rename button */
+        console.log('GUI started');
+        const rules = {
+          suffix: null,
+          prefix: null,
+          basename: null,
+          trimspace: null,
+          textcontent: null,
+          increment: null,
+          incrementFrom: null, // start number
+          incrementStep: null, // step number
+          incrementFormat: null, // underscore, parentheses
+        };
+
+        const buttonRename = document.getElementById('rename');
+        buttonRename.onclick = () => {
+          rules.suffix = document.getElementById('suffixcheck').checked
+            ? document.getElementById('suffix').value
+            : null;
+          rules.prefix = document.getElementById('prefixcheck').checked
+            ? document.getElementById('prefix').value
+            : null;
+          rules.basename = document.getElementById('basenamecheck').checked
+            ? document.getElementById('basename').value
+            : null;
+          rules.trimspace = document.getElementById('trimspacecheck').checked;
+          rules.textcontent = document.getElementById('textcontentcheck').checked;
+          rules.increment = document.getElementById('increment').checked;
+          rules.incrementFrom = document.getElementById('startwith').value;
+          rules.incrementStep = document.getElementById('stepfor').value;
+          rules.incrementFormat = 'underscore'; // only support currently
+
+          parent.postMessage({ pluginMessage: { type: 'rename', rules,  layers: _layers} }, '*');
+        };
+
+        let _layers = {
+          parentLayer: [],
+          childLayer: []
+        };
+
+        /* Selection Logs */
+        onmessage = (message) => {
+          console.log('[Parent message]', message);
+          const data = message.data.pluginMessage;
+          const selection = data.selection
+            .map((layer, index) => {
+              const parentLayer = createLayer(layer, index, 'parentLayer');
+              const childrenLayers = layer
+                      .children
+                      .map((child, childIndex) => {
+                        const childLayer = createInnerLayer(child, childIndex, 'childLayer');
+                        return childLayer;
+                      });
+              const rendertree = [parentLayer, ...childrenLayers];
+              return rendertree;
+            });
+          if (selection.length === 0) {
+            buttonRename.classList.add('disable');
+          } else {
+            buttonRename.classList.remove('disable');
+          }
+          document.getElementById('logs').innerHTML = selection.length > 0
+            ? selection[0].join('\n')
+            : 'Selection on Figma will log here';
+          if (selection.length > 0) {
+            attachSelectHanderFor('parentLayer');
+            if (selection[0].length > 1) {
+              attachSelectHanderFor('childLayer');
+            }
+          }
+
+        }
+
+        function createLayer(item, index, name = 'parentLayer') {
+          const _id = name + index;
+          const layer = `
+            <div class="flex flex-gap" style="align-items: flex-start">
+              <input id="${_id}" name="${name}" value="${index}" type="checkbox" checked/>
+              <label for="${_id}">${item.label}</label>
+            </div>
+            `;
+          return layer;
+        }
+
+        function createInnerLayer(item, index, name = 'childLayer') {
+          const template = `<div style="margin-left: 16px">
+            ${createLayer(item, index, name)}
+          </div>`;
+          return template;
+        }
+
+        function attachSelectHanderFor(name = 'layerx') {
+          console.log('[attachSelectHanderFor]', name);
+          _layers[name] = [];
+          const _query = document.querySelectorAll(`input[name=${name}]`);
+          if (_query && _query.length > 0) {
+            _query.forEach((control, index) => {
+              /* Create values */
+              _layers[name].push({value: control.value, checked: control.checked});
+              /* Update values */
+              control.onchange = (item) => {
+                _layers[name][index] = {value: item.target.value, checked: item.target.checked};
+                // console.log('_layers', _layers);
+              }
+            });
+            // console.log('_layers', _layers);
+          }
+        }
+
+      </script>
+
+    </body>
+</html>

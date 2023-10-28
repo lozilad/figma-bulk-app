@@ -1,5 +1,7 @@
 # README
 
+![CoverPlugin](https://github.com/lozilad/figma-bulk-app/assets/106429945/3cf6f78e-9e74-4b34-bc24-91d641394d20)
+
 ## FROM AUTHOR
 
 ```
